@@ -6,10 +6,9 @@ class Pen{
         System.out.println("writing something");
     }
     public void printColor(){
-        System.out.print("The color of pen is ");
-        System.out.println(this.color);
-        System.out.print("The type of pen is ");
-        System.out.println(this.type);
+        System.out.println("The color of pen is "+this.color);
+        System.out.println("The type of pen is "+this.type);
+
     }
 }
 public class OOPS{
