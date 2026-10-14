@@ -1,0 +1,38 @@
+# Base44 sandbox/dev environment for this repository.
+#
+# The project is a single-file Java console program (OOPS.java) with no build
+# tool and no web layer, so there is nothing that can listen on port 3000 by
+# itself. The JDK image below runs the project straight from the bind-mounted
+# source: it compiles OOPS.java together with the small preview harness in
+# .base44/preview/PreviewServer.java, then serves that harness on port 3000.
+# The harness compiles and runs OOPS.java on each request, so source edits show
+# up without rebuilding anything.
+#
+#   docker compose -f docker-compose.base44.yml up -d --build
+#
+# No external services and no credentials are involved.
+
+services:
+  app:
+    image: eclipse-temurin:17-jdk-alpine
+    working_dir: /app
+    command:
+      - sh
+      - -ec
+      - >-
+        javac -d /tmp/classes /app/OOPS.java /app/.base44/preview/PreviewServer.java
+        && exec java -cp /tmp/classes PreviewServer
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app
+    environment:
+      - BASE44_PREVIEW_MODE
+    healthcheck:
+      # The JDK image ships busybox wget; GET / is the harness's real entry point.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: on-failure
